@@ -1,0 +1,9 @@
+{
+  "name": "amazonscraper",
+  "main": "scraper.js",
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "request": "^2.65.0",
+    "twilio": "^2.5.1"
+  }
+}
