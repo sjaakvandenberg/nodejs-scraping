@@ -1,10 +1,10 @@
 'use strict';
-const accountSid   = 'ACCOUNTSID';
-const authToken    = 'AUTHTOKEN';
-const twilioNumber = '+12345678900';
-const yourNumber   = '+12345678900';
-const intervalMins = .1;
-const url          = 'http://www.amazon.com/dp/B00I15SB16';
+var accountSid   = 'ACCOUNTSID';
+var authToken    = 'AUTHTOKEN';
+var twilioNumber = '+12345678900';
+var yourNumber   = '+12345678900';
+var intervalMins = .1;
+var url          = 'http://www.amazon.com/dp/B00I15SB16';
 
 // CommonJS requires
 
@@ -18,24 +18,24 @@ setInterval(function() {
   // this is the Amazon page for the Kindle
 
   request(url, function(error, response, html) {
-    let price;
-    let json = {
+    var price;
+    var json = {
       price: '',
     };
     if (!error && response.statusCode == 200) {
-      let $ = cheerio.load(html);
+      var $ = cheerio.load(html);
 
       // scrape product name
       $('span#productTitle').each(function(i, element) {
-        let a = $(this);
-        let product = a.text();
+        var a = $(this);
+        var product = a.text();
 
-        let client = require('twilio')(accountSid, authToken);
+        var client = require('twilio')(accountSid, authToken);
         json.product = product;
 
         fs.readFile('price.json', function(err, data) {
           if (err) throw err;
-          let obj = JSON.parse(data);
+          var obj = JSON.parse(data);
           if (obj.product != product) {
             console.log('Product name has changed.');
             fs.writeFile('price.json', JSON.stringify(json, null, 4), function(err) {
@@ -47,25 +47,31 @@ setInterval(function() {
 
       // scrape product price
       $('span#priceblock_ourprice').each(function(i, element) {
-        let a = $(this);
-        let price = a.text();
+        var a = $(this);
+        var price = a.text();
 
         // require Twilio module and create REST client
-        let client = require('twilio')(accountSid, authToken);
+        var client = require('twilio')(accountSid, authToken);
         json.price = price;
 
         fs.readFile('price.json', function(err, data) {
           if (err) throw err;
-          let obj = JSON.parse(data);
+          var obj = JSON.parse(data);
           if (obj.price != price) {
             console.log('Price change detected. Sending text!');
             console.log('------------------------------------');
-            console.log(`\nPRICE CHANGE:\n\nProduct: ${json.product}\nOld price: ${obj.price}\nNew price: ${json.price}`);
+            console.log('\nPRICE CHANGE:\n');
+            console.log('Product: ' + json.product);
+            console.log('Old Price: ' + obj.price);
+            console.log('New Price: ' + json.price + '\n');
 
             client.messages.create({
               from: twilioNumber,
               to: yourNumber,
-              body: `\nPRICE CHANGE:\n\nProduct: ${json.product}\nOld price: ${obj.price}\nNew price: ${json.price}`,
+              body: '\nPRICE CHANGE:\n' +
+                    'Product: ' + json.product +
+                    'Old Price: ' + obj.price +
+                    'New Price: ' + json.price,
             });
             fs.writeFile('price.json', JSON.stringify(json, null, 4), function(err) {
               console.log('Price saved in price.json');
